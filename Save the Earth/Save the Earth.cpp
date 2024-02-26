@@ -79,7 +79,7 @@ float cl_height = 0;
 int start_screen_col = 0;
 int minutes = 0;
 int seconds = 180;
-CELL ScreenGrid[6][4];
+CELL ScreenGrid[7][4];
 CELL Grid[24][4];
 
 //////////////////////////////////////////////////////////////
@@ -182,11 +182,10 @@ void InitGame()
     name_set = false;
 
     
-    CreateGrid(0, 51.0f, Grid);
+    CreateGrid(0, 51, Grid);
     for (int i = 0; i < 4; i++)
-        for (int j = 0; j < 6; j++)
-            ScreenGrid[j][i] = Grid[j][i];
-            
+        for (int j = 0; j < 7; j++) ScreenGrid[j][i] = Grid[j][i];
+    
 }
 
 void GameOver()
@@ -308,6 +307,12 @@ LRESULT CALLBACK bWinProc(HWND hwnd, UINT ReceivedMsg, WPARAM wParam, LPARAM lPa
                         if (sound)mciSendString(L"play .\\res\\snd\\click.wav", NULL, NULL, NULL);
                         b1_hglt = true;
                     }
+                    if (b2_hglt || b3_hglt)
+                    {
+                        if (sound)mciSendString(L"play .\\res\\snd\\click.wav", NULL, NULL, NULL);
+                        b2_hglt = false;
+                        b3_hglt = false;
+                    }
                 }
 
                 if (cur_pos.x >= b2Rect.left && cur_pos.x <= b2Rect.right)
@@ -317,6 +322,11 @@ LRESULT CALLBACK bWinProc(HWND hwnd, UINT ReceivedMsg, WPARAM wParam, LPARAM lPa
                         if (sound)mciSendString(L"play .\\res\\snd\\click.wav", NULL, NULL, NULL);
                         b2_hglt = true;
                     }
+                    if (b1_hglt || b3_hglt)
+                    {
+                        b1_hglt = false;
+                        b3_hglt = false;
+                    }
                 }
 
                 if (cur_pos.x >= b3Rect.left && cur_pos.x <= b3Rect.right)
@@ -325,6 +335,11 @@ LRESULT CALLBACK bWinProc(HWND hwnd, UINT ReceivedMsg, WPARAM wParam, LPARAM lPa
                     {
                         if (sound)mciSendString(L"play .\\res\\snd\\click.wav", NULL, NULL, NULL);
                         b3_hglt = true;
+                    }
+                    if (b1_hglt || b2_hglt)
+                    {
+                        b1_hglt = false;
+                        b2_hglt = false;
                     }
                 }
 
@@ -524,7 +539,7 @@ void SystemInit()
     }
     if (Unbind(&gstop_coll) == DL_FAIL)ErrLog(L"Error releasing GStopCollection after LinearGradientBrush init ! ");
 
-    hr = Draw->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Green), &TxtBrush);
+    hr = Draw->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Red), &TxtBrush);
     if (hr != S_OK)
     {
         ErrLog(L"Error creating D2D1 TxtBrush !");
@@ -555,7 +570,7 @@ void SystemInit()
     }
 
     hr = iWriteFactory->CreateTextFormat(L"GABRIOLA", NULL, DWRITE_FONT_WEIGHT_BOLD, DWRITE_FONT_STYLE_OBLIQUE,
-        DWRITE_FONT_STRETCH_EXPANDED, 18.0f, L"", &nrmText);
+        DWRITE_FONT_STRETCH_EXPANDED, 24.0f, L"", &nrmText);
     if (hr != S_OK)
     {
         ErrLog(L"Error creating D2D1 nrmText !");
@@ -695,7 +710,7 @@ void SystemInit()
 
     ////////////////////////////////////////////////////////
 
-    wchar_t first_text[34] = L"ИЗВЪНЗЕМНИ В АТАКА !\n\ndev.Daniel";
+    wchar_t first_text[34] = L"ИЗВЪНЗЕМНИ В АТАКА !\n\ndev. Daniel";
     wchar_t show_text[34] = L"\0";
 
     for (int i = 0; i < 34; ++i)
@@ -704,7 +719,7 @@ void SystemInit()
         Draw->Clear(D2D1::ColorF(D2D1::ColorF::DarkSlateBlue));
         show_text[i] = first_text[i];
         if (TxtBrush && bigText)
-            Draw->DrawTextW(show_text, i, bigText, D2D1::RectF(150.0f, cl_height / 2 - 50.0f, cl_width, cl_height), TxtBrush);
+            Draw->DrawTextW(show_text, i, bigText, D2D1::RectF(100.0f, cl_height / 2 - 50.0f, cl_width, cl_height), TxtBrush);
         Draw->EndDraw();
         mciSendString(L"play .\\res\\snd\\click.wav", NULL, NULL, NULL);
         Sleep(45);
@@ -785,7 +800,24 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
                     b3Rect.right, b3Rect.bottom), HgltBrush);
         }
 
+        for (int row = 0; row < 4; row++)
+        {
+            for (int col = 0; col < 7; col++)
+            {
+                switch (Grid[col][row].type)
+                {
+                case types::brick:
+                    Draw->DrawBitmap(bmpBrick, D2D1::RectF((float)(ScreenGrid[col][row].x), (float)(ScreenGrid[col][row].y + 50),
+                        (float)(ScreenGrid[col][row].ex), (float)(ScreenGrid[col][row].ey)));
+                    break;
 
+                case types::field:
+                    Draw->DrawBitmap(bmpField, D2D1::RectF((float)(ScreenGrid[col][row].x), (float)(ScreenGrid[col][row].ey - 29),
+                        (float)(ScreenGrid[col][row].ex), (float)(ScreenGrid[col][row].ey)));
+                    break;
+                } 
+            }
+        }
 
 
         /////////////////////////////////////
