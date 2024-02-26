@@ -79,8 +79,15 @@ float cl_height = 0;
 int start_screen_col = 0;
 int minutes = 0;
 int seconds = 180;
+
 CELL ScreenGrid[7][4];
 CELL Grid[24][4];
+
+obj_ptr Cloud1 = nullptr;
+dirs cloud1_dir = dirs::stop;
+
+obj_ptr Cloud2 = nullptr;
+dirs cloud2_dir = dirs::stop;
 
 //////////////////////////////////////////////////////////////
 
@@ -760,6 +767,96 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 
         ////////////////////////////
 
+        //GAME ENGINE **********************
+
+        //CLOUDS ***************************
+
+        if (!Cloud1 && rand() % 20 == 10)
+        {
+            switch (rand() % 2)
+            {
+            case 0:
+                Cloud1 = OBJECT::GetObjectW(-100.0f, 55.0f, 100.0f, 53.0f);
+                cloud1_dir = dirs::right;
+                break;
+
+            case 1:
+                Cloud1 = OBJECT::GetObjectW(cl_width, 55.0f, 100.0f, 53.0f);
+                cloud1_dir = dirs::left;
+                break;
+            }
+        }
+        else if(Cloud1)
+        {
+            if (cloud1_dir == dirs::right)Cloud1->x += 0.3f;
+            else Cloud1->x -= 0.3f;
+            Cloud1->SetEdges();
+        }
+
+        if (!Cloud2 && rand() % 20 == 8)
+        {
+            switch (rand() % 2)
+            {
+            case 0:
+                Cloud2 = OBJECT::GetObjectW(-80.0f, 80.0f, 80.0f, 42.0f);
+                cloud2_dir = dirs::right;
+                break;
+
+            case 1:
+                Cloud2 = OBJECT::GetObjectW(cl_width, 80.0f, 80.0f, 42.0f);
+                cloud2_dir = dirs::left;
+                break;
+            }
+        }
+        else if(Cloud2)
+        {
+            if (cloud2_dir == dirs::right)Cloud2->x += 0.5f;
+            else Cloud2->x -= 0.5f;
+            Cloud2->SetEdges();
+        }
+
+        if (Cloud1)
+        {
+            if (cloud1_dir == dirs::left && Cloud1->ex <= 0)
+            {
+                Cloud1->Release();
+                Cloud1 = nullptr;
+            }
+            if (cloud1_dir == dirs::right && Cloud1->x >= cl_width)
+            {
+                Cloud1->Release();
+                Cloud1 = nullptr;
+            }
+        }
+
+        if (Cloud2)
+        {
+            if (cloud2_dir == dirs::left && Cloud2->ex <= 0)
+            {
+                Cloud2->Release();
+                Cloud2 = nullptr;
+            }
+            if (cloud2_dir == dirs::right && Cloud2->x >= cl_width)
+            {
+                Cloud2->Release();
+                Cloud2 = nullptr;
+            }
+        }
+        ///////////////////////////////////////////////
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -819,6 +916,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
             }
         }
 
+        if (Cloud1)Draw->DrawBitmap(bmpCloud1, D2D1::RectF(Cloud1->x, Cloud1->y, Cloud1->ex, Cloud1->ey));
+        if (Cloud2)Draw->DrawBitmap(bmpCloud2, D2D1::RectF(Cloud2->x, Cloud2->y, Cloud2->ex, Cloud2->ey));
 
         /////////////////////////////////////
 
