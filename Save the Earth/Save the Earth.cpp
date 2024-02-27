@@ -89,6 +89,8 @@ dirs cloud1_dir = dirs::stop;
 obj_ptr Cloud2 = nullptr;
 dirs cloud2_dir = dirs::stop;
 
+act_ptr Hero = nullptr;
+
 //////////////////////////////////////////////////////////////
 
 ID2D1Factory* iFactory = nullptr;
@@ -185,14 +187,19 @@ void InitGame()
     minutes = 0;
     seconds = 180;
 
+    Unbind(&Cloud1);
+    Unbind(&Cloud2);
+    Unbind(&Hero);
+
     wcscpy_s(current_player, L"UNKNOWN HERO");
     name_set = false;
 
-    
     CreateGrid(0, 51, Grid);
     for (int i = 0; i < 4; i++)
         for (int j = 0; j < 7; j++) ScreenGrid[j][i] = Grid[j][i];
     
+    if (!Hero)Hero = Factory(50.0f, (float)(Grid[0][3].y + 40.0f), types::hero);
+
 }
 
 void GameOver()
@@ -434,7 +441,37 @@ LRESULT CALLBACK bWinProc(HWND hwnd, UINT ReceivedMsg, WPARAM wParam, LPARAM lPa
         }
         break;
 
+    case WM_KEYDOWN:
+        switch (wParam)
+        {
+        case VK_LEFT:
+            if (Hero)
+            {
+                if (Hero->dir != dirs::left && Hero->dir != dirs::right && Hero->dir != dirs::stop)break;
+                Hero->dir = dirs::left;
+            }
+            break;
 
+        case VK_RIGHT:
+            if (Hero->dir != dirs::left && Hero->dir != dirs::right && Hero->dir != dirs::stop)break;
+            if (Hero) Hero->dir = dirs::right;
+            break;
+
+        case VK_DOWN:
+            if (Hero)
+            {
+                if (Hero->dir == dirs::left || Hero->dir == dirs::right)Hero->dir = dirs::stop;
+            }
+            break;
+
+        case VK_UP:
+            if (Hero)
+            {
+                if (!Hero->now_jumping)Hero->now_jumping = true;
+            }
+            break;
+        }
+        break;
 
 
     default: return DefWindowProc(hwnd, ReceivedMsg, wParam, lParam);
@@ -844,8 +881,56 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
         }
         ///////////////////////////////////////////////
 
+        //HERO MOVING *********************************
+
+        if (Hero)
+        {
+            if (!Hero->now_jumping)
+            {
+                if (Hero->dir == dirs::left || Hero->dir == dirs::right)
+                {
+                    Hero->Move((float)(level));
+                    if (Grid[Hero->GetCol()][Hero->GetRow()].type == types::no_type)Hero->Fall((float)(level));
+                }
+            }
+            else Hero->Jump((float)(level));
+        }
+
+        if (Hero)
+        {
+            if (Hero->dir == dirs::down)
+            {
+                if (Grid[Hero->GetCol()][Hero->GetRow()].type == types::field)
+                {
+                    Hero->y = (float)(Grid[Hero->GetCol()][Hero->GetRow()].y + 40);
+                    Hero->SetEdges();
+                    Hero->SetCellDims();
+                    if (Hero->now_jumping)
+                    {
+                        Hero->now_jumping = false;
+                        Hero->max_jump_point_set = false;
+                        Hero->dir = Hero->jump_dir;
+                    }
+                }
+
+                else if (Grid[Hero->GetCol()][Hero->GetRow()].type == types::brick)
+                {
+                    Hero->y = (float)(Grid[Hero->GetCol()][Hero->GetRow()].y + 30);
+                    Hero->SetEdges();
+                    Hero->SetCellDims();
+                    if (Hero->now_jumping)
+                    {
+                        Hero->now_jumping = false;
+                        Hero->max_jump_point_set = false;
+                        Hero->dir = Hero->jump_dir;
+                    }
+                }
+            }
+        }
 
 
+
+        ///////////////////////////////////////////////
 
 
 
@@ -918,6 +1003,25 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 
         if (Cloud1)Draw->DrawBitmap(bmpCloud1, D2D1::RectF(Cloud1->x, Cloud1->y, Cloud1->ex, Cloud1->ey));
         if (Cloud2)Draw->DrawBitmap(bmpCloud2, D2D1::RectF(Cloud2->x, Cloud2->y, Cloud2->ex, Cloud2->ey));
+
+        /////////////////////////////////////
+
+        if (Hero)
+        {
+            if (Hero->dir == dirs::right || Hero->dir == dirs::stop)
+                Draw->DrawBitmap(bmpHeroR[Hero->GetFrame()], D2D1::RectF(Hero->x, Hero->y, Hero->ex, Hero->ey));
+            if (Hero->dir == dirs::left)
+                Draw->DrawBitmap(bmpHeroL[Hero->GetFrame()], D2D1::RectF(Hero->x, Hero->y, Hero->ex, Hero->ey));
+            if (Hero->dir == dirs::up || Hero->dir == dirs::down)
+            {
+                if (Hero->jump_dir == dirs::left)
+                    Draw->DrawBitmap(bmpHeroL[Hero->GetFrame()], D2D1::RectF(Hero->x, Hero->y, Hero->ex, Hero->ey));
+                else
+                    Draw->DrawBitmap(bmpHeroR[Hero->GetFrame()], D2D1::RectF(Hero->x, Hero->y, Hero->ex, Hero->ey));
+            }
+        }
+
+
 
         /////////////////////////////////////
 

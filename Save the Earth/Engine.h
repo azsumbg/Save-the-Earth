@@ -88,8 +88,7 @@ class ENGINE_API DLINTERFACE :public OBJECT
 		int killed_timer = 100;
 
 		float max_jump_point = 0;
-		bool max_jump_point_set = false;
-
+		
 		CELL my_cell;
 
 	public:
@@ -101,6 +100,8 @@ class ENGINE_API DLINTERFACE :public OBJECT
 
 		bool alive = true;
 		bool now_jumping = false;
+		bool max_jump_point_set = false;
+
 
 		DLINTERFACE(float _x, float _y, float _width, float _height, types _type) :OBJECT(_x, _y, _width, _height)
 		{
