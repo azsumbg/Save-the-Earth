@@ -890,11 +890,14 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
                 if (Hero->dir == dirs::left || Hero->dir == dirs::right)
                 {
                     Hero->Move((float)(level));
-                    if (Grid[Hero->GetCol()][Hero->GetRow()].type == types::no_type)Hero->Fall((float)(level));
+                    
                 }
             }
             else Hero->Jump((float)(level));
         }
+
+        if (Hero)
+            if (Grid[Hero->GetCol()][Hero->GetRow()].type == types::no_type)Hero->Fall((float)(level));
 
         if (Hero)
         {
