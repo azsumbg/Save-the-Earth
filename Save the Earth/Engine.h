@@ -167,6 +167,7 @@ class ENGINE_API DLINTERFACE :public OBJECT
 				SetEdges();
 				SetCellDims();
 			}
+			dir = dirs::down;
 		}
 
 		virtual void Release() = 0;

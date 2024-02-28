@@ -199,7 +199,7 @@ void InitGame()
         for (int j = 0; j < 7; j++) ScreenGrid[j][i] = Grid[j][i];
     
     if (!Hero)Hero = Factory(50.0f, (float)(Grid[0][3].y + 40.0f), types::hero);
-
+    Grid[3][2].type = types::brick;
 }
 
 void GameOver()
@@ -911,11 +911,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
                         Hero->max_jump_point_set = false;
                         Hero->dir = Hero->jump_dir;
                     }
+                    if (Hero->dir == dirs::up || Hero->dir == dirs::down)Hero->dir = dirs::stop;
                 }
 
                 else if (Grid[Hero->GetCol()][Hero->GetRow()].type == types::brick)
                 {
-                    Hero->y = (float)(Grid[Hero->GetCol()][Hero->GetRow()].y + 30);
+                    Hero->y = (float)(Grid[Hero->GetCol()][Hero->GetRow()].y + 25);
                     Hero->SetEdges();
                     Hero->SetCellDims();
                     if (Hero->now_jumping)
@@ -924,6 +925,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
                         Hero->max_jump_point_set = false;
                         Hero->dir = Hero->jump_dir;
                     }
+                    if (Hero->dir == dirs::up || Hero->dir == dirs::down)Hero->dir = dirs::stop;
                 }
             }
         }
